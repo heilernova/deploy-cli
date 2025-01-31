@@ -1,15 +1,18 @@
 import os from "node:os";
-import inquirer from "inquirer"
+import { Config } from "../core/config.js";
+import { input, password } from "@inquirer/prompts";
 import { startSpinner, stopSpinner } from "../utils/spinner.js";
 import { HttpClient } from "../http/http-client.js";
-import { Config } from "../core/config.js";
+// import { input, password } from '@inquirer/prompts';
+// import { startSpinner, stopSpinner } from "../utils/spinner.js";
+// import { HttpClient } from "../http/http-client.js";
 
 export const login = async (config: Config) => {
-    let data: { server: string, username: string, password: string } = await inquirer.prompt([
-        { name: "server", message: "Server", type: "input", default: config.cache.login?.server },
-        { name: "username", message: "Username", type: "input", default: config.cache.login?.username },
-        { name: "password", message: "Password", type: "password", mask: "*" }
-    ]);
+    const data = {
+        server: await input({ message: "Server", default: config.cache.login?.server }),
+        username: await input({ message: "Username", default: config.cache.login?.username }),
+        password: await password({ message: "Password", mask: "*" }),
+    }
 
     config.cache.login = {
         server: data.server,

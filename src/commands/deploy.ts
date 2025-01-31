@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { Config } from "../core/config.js";
 import { IApplication } from "../interfaces/application.interface.js";
-import inquirer from "inquirer";
+import { select } from "@inquirer/prompts"
 import { IServer } from "../interfaces/server.interface.js";
 import { createReadStream, createWriteStream, existsSync, ReadStream } from "fs";
 import { startSpinner, stopSpinner } from "../utils/spinner.js";
@@ -51,14 +51,15 @@ export const deploy = async (config: Config) => {
     } else if (config.apps.length == 1){
         app = config.apps[0];
     } else {
-        let result: { app: IApplication } = await inquirer.prompt({ name: "app", message: "Selecciones el proyecto", type: "list", choices: config.apps.map(x => { 
+
+        let result = await select({ message: "Selecciones el proyecto", choices: config.apps.map(x => {
             return {
                 name: `${x.domain} - ${x.name}`,
                 value: x
             }
         })});
 
-        app = result.app;
+        app = result;
     }
 
     const server: IServer | undefined = config.servers.find(x => x.url == app.server);

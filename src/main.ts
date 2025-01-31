@@ -2,15 +2,22 @@
 import { dirname, join } from "node:path";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { Command } from "commander";
-import { json } from "node:stream/consumers";
 import { IConfigGlobal } from "./interfaces/config-global.interface.js";
 import { IConfigWorkspace } from "./interfaces/config-workspace.interface.js";
-import { IConfig } from "./interfaces/config.interface.js";
-import { login } from "./commands/login.js";
 import { Config } from "./core/config.js";
+import { login } from "./commands/login.js";
 import { appProject } from "./commands/add-proyect.js";
 import { deploy } from "./commands/deploy.js";
+import { listServers } from "./commands/list-servers.js";
+import { deleteServer } from "./commands/delete-servers.js";
 
+process.on('uncaughtException', (error) => {
+    if (error instanceof Error && error.name === 'ExitPromptError') {
+      console.log('---- Proceso finalizado ----');
+    } else {
+      throw error;
+    }
+  });
 
 // Cargamos las configuraciones del sistemas
 const dirBase = dirname(dirname(process.argv[1]));
@@ -32,9 +39,16 @@ const config = new Config({
     apps: configWorkspace.apps,
 }, dirBase);
 
+
 const program = new Command();
+
+program.version("d", '-v, --version', 'Output the current version.');
 program.command("login").action(() => login(config));
 program.command("add").action(() => appProject(config));
+program.command("servers [d]").action((p?: string) => {
+    if (p === 'delete') return deleteServer(config);
+    listServers(config);
+});
 program.action(() => deploy(config));
 
 program.parse(process.argv);

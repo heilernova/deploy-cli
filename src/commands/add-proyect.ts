@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import inquirer from "inquirer";
 import { Config } from "../core/config.js";
+import { input, select } from "@inquirer/prompts";
 import { IServer } from "../interfaces/server.interface.js";
 import { HttpClient } from "../http/http-client.js";
 import { startSpinner, stopSpinner } from "../utils/spinner.js";
@@ -14,13 +14,14 @@ export const appProject = async (config: Config) => {
     } else if (config.servers.length == 1){
         server = config.servers[0];
     } else {
-        let result: { server: IServer } = await inquirer.prompt({ name: "server", message: "Seleccione el servidor", type: "list", choices: config.servers.map(x => { 
+
+        let result: IServer = await select({ message: "Seleccione el servidor",  choices: config.servers.map(x => { 
             return {
                 name: x.url,
                 value: x
             }
         })});
-        server = result.server;
+        server = result;
     }
 
     const http = HttpClient.server(server);
@@ -41,12 +42,12 @@ export const appProject = async (config: Config) => {
     let apps = response.data.data;
     stopSpinner("Aplicaciones cargadas", "✔");
 
-    const app: any = (await inquirer.prompt({
-        name: "app",
+    const app: any = (await select({
         message: "Seleccione la aplicación",
-        type: "list",
         choices: apps.map(x => ({ name: `${x.name}  - ${x.domain}`, value: x }))
-    })).app;
+    }));
+
+
     const index = config.apps.findIndex(x => x.id == app.id);
     if (index > -1){
         config.apps[index].domain = app.domain;
@@ -56,23 +57,10 @@ export const appProject = async (config: Config) => {
         process.exit(1);
     }
 
-    let res: {
-        location: string,
-        include: string,
-    } = await inquirer.prompt([
-        {
-            name: "location",
-            message: "Ubicación del código a desplegar",
-            type: "input",
-        },
-        {
-            name: "include",
-            message: "Archivos a incluir",
-            type: "input"
-        }
-    ]);
-
-
+    let res = {
+        location: await input({ message: "Ubicación del código a desplegar" }),
+        include: await input({ message: "Archivos a incluir" })
+    }
 
     config.apps.push({
         id: app.id,

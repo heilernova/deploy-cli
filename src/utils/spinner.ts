@@ -1,10 +1,12 @@
-import cliSpinners from "cli-spinners";
 import logUpdate from "log-update";
 import chalk from "chalk";
 
 let interval: NodeJS.Timeout | undefined;
 export const startSpinner = (message: string) => {
-    const spinner = cliSpinners.dots5;
+    const spinner =  {
+        interval: 80,
+        frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+    }
     let i = 0;
     let intervalTimer = setInterval(() => {
         const { frames } = spinner;
